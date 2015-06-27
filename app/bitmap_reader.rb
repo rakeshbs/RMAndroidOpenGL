@@ -1,18 +1,17 @@
-class Person
-  attr_accessor :name, :age, :sex, :location, :photo_url
+class BitmapReader
 
-  def get_photo_bitmap(context, file_name)
+  def self.get_photo_bitmap(context,file_name)
+    context = BitmapReader.getContext
     id = context.resources.getIdentifier(file_name, 'drawable', context.packageName)
     img =  Android::Graphics::BitmapFactory.decodeResource(context.resources, id)
     return img
   end
 
-  def get_circular_photo_bitmap(context, file_name,radius)
-    create_circular_bitmap(get_photo_bitmap(context, file_name), radius)
+  def self.get_circular_photo_bitmap(context,file_name,radius)
+    create_circular_bitmap(get_photo_bitmap(file_name), radius)
   end
 
-  def create_circular_bitmap(bitmap, radius)
-    p "hi"
+  def self.create_circular_bitmap(bitmap, radius)
     if (bitmap.width != radius || bitmap.height != radius)
       scaled_bitmap = Android::Graphics::Bitmap.createScaledBitmap(bitmap, radius, radius, false)
     else

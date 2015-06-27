@@ -7,10 +7,12 @@ class MainActivity < Android::App::Activity
 
     @view = Android::Opengl::GLSurfaceView.new(self)
 
-    @renderer = OpenGLRenderer.new
-    @renderer.context = self
-    @view.setRenderer(@renderer)
+    display = getWindowManager().getDefaultDisplay();
+    size = Android::Graphics::Point.new
+    display.getSize(size);
 
+    @renderer = OpenGLRenderer.new(self, size.x, size.y)
+    @view.setRenderer(@renderer)
     setContentView(@view)
 
   end

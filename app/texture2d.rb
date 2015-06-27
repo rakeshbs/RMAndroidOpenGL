@@ -12,6 +12,7 @@ class Texture2D
 
   def load_texture_from_bitmap(bitmap)
     generate_texture_id
+    @gl.glEnable(@gl.GL_TEXTURE_2D)
     @gl.glBindTexture(@gl.GL_TEXTURE_2D, @texture_id)
 
     @gl.glTexParameterf(@gl.GL_TEXTURE_2D, @gl.GL_TEXTURE_MIN_FILTER, @gl.GL_LINEAR)
@@ -24,44 +25,54 @@ class Texture2D
 
     Android::Opengl::GLUtils.texImage2D(@gl.GL_TEXTURE_2D, 0, bitmap, 0)
 
-    @texture_coordinates = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
-    @indices = [0, 1, 3, 0, 3, 2]
+    w = bitmap.width
+    h = bitmap.height
+
+    @vertex_coordinates =  [0,   0,   0,   h,   w,   0,   w,   h]
+    @texture_coordinates = [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]
+    @indices = [0, 2, 1, 2, 1, 3]
+
+    byteBuf = Java::Nio::ByteBuffer.allocateDirect(@vertex_coordinates.length * 4)
+    byteBuf.order(Java::Nio::ByteOrder.nativeOrder)
+    @vertexBuffer = byteBuf.asFloatBuffer()
+    @vertexBuffer.put(@vertex_coordinates)
+    @vertexBuffer.position(0)
+
 
     byteBuf = Java::Nio::ByteBuffer.allocateDirect(@texture_coordinates.length * 4)
     byteBuf.order(Java::Nio::ByteOrder.nativeOrder)
     @textureBuffer = byteBuf.asFloatBuffer()
     @textureBuffer.put(@texture_coordinates)
     @textureBuffer.position(0)
+    @gl.glDisable(@gl.GL_TEXTURE_2D)
 
-    byteBuf = Java::Nio::ByteBuffer.allocateDirect(@texture_coordinates.length * 4)
-    byteBuf.order(Java::Nio::ByteOrder.nativeOrder)
-    @vertexBuffer = byteBuf.asFloatBuffer()
+    @indexBuffer = Java::Nio::ByteBuffer.allocateDirect(@indices.length)
+    @indexBuffer.order(Java::Nio::ByteOrder.nativeOrder)
+    @indexBuffer.put(@indices)
+    @indexBuffer.position(0)
   end
 
   def self.enableClientState(gl)
+    gl.glEnable(gl.GL_TEXTURE_2D)
     gl.glEnableClientState(gl.GL_VERTEX_ARRAY)
     gl.glEnableClientState(gl.GL_TEXTURE_COORD_ARRAY)
   end
 
   def self.disableClientState(gl)
+    gl.glDisable(gl.GL_TEXTURE_2D)
     gl.glDisableClientState(gl.GL_VERTEX_ARRAY)
     gl.glDisableClientState(gl.GL_TEXTURE_COORD_ARRAY)
   end
 
-  def drawInRect(rect)
+  def draw(position,scale)
     @gl.glBindTexture(@gl.GL_TEXTURE_2D, @texture_id)
-    c_x = rect.centerX
-    c_y = rect.centerY
-    h_w = rect.width / 2
-    h_h = rect.height / 2
-
-    vertex_coordinates = [c_x - h_w, c_y - h_h, c_x - h_w, c_y + h_h, c_x + h_w, c_y - h_h, c_x + h_w, c_y + h_h]
-    @vertexBuffer.put(vertex_coordinates)
-    @vertexBuffer.position(0)
-
+    @gl.glPushMatrix
+    @gl.glTranslatef(position.x, position.y, 0)
+    @gl.glScalef(scale.x, scale.y, 0)
     @gl.glVertexPointer(2, @gl.GL_FLOAT, 0, @vertexBuffer)
     @gl.glTexCoordPointer(2, @gl.GL_FLOAT, 0, @textureBuffer)
-    @gl.glDrawArrays(@gl.GL_TRIANGLES, 0, 6)
+    @gl.glDrawElements(@gl.GL_TRIANGLES, @indices.length, @gl.GL_UNSIGNED_BYTE, @indexBuffer)
+    @gl.glPopMatrix
   end
 
 end
