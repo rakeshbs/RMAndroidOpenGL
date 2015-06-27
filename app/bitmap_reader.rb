@@ -1,14 +1,13 @@
 class BitmapReader
 
   def self.get_photo_bitmap(context,file_name)
-    context = BitmapReader.getContext
     id = context.resources.getIdentifier(file_name, 'drawable', context.packageName)
     img =  Android::Graphics::BitmapFactory.decodeResource(context.resources, id)
     return img
   end
 
   def self.get_circular_photo_bitmap(context,file_name,radius)
-    create_circular_bitmap(get_photo_bitmap(file_name), radius)
+    create_circular_bitmap(get_photo_bitmap(context,file_name), radius)
   end
 
   def self.create_circular_bitmap(bitmap, radius)

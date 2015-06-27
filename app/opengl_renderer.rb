@@ -32,7 +32,6 @@ class OpenGLRenderer
   end
 
   def onDrawFrame(gl)
-    p "one", gl.GL_ONE
     gl.glClear(gl.GL_COLOR_BUFFER_BIT)
     gl.glLoadIdentity()
     gl.glClearColor(1, 0, 0, 1)
